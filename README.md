@@ -13,7 +13,7 @@ A full-stack CRUD application for tracking job applications built with Next.js a
 
 ## Tech Stack
 
-- Next.js 14+ (App Router)
+- Next.js 16+ (App Router)
 - TypeScript
 - Tailwind CSS
 - Supabase (PostgreSQL, Authentication)
