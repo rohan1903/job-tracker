@@ -194,13 +194,6 @@ All npm commands work identically across platforms. See [SETUP.md](./SETUP.md) f
 - **[SETUP.md](./SETUP.md)** - Detailed setup instructions for different operating systems
 - **[ENV_SETUP.md](./ENV_SETUP.md)** - Comprehensive guide for environment variable configuration
 
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Backend powered by [Supabase](https://supabase.com/)
-- Icons and UI inspiration from the open-source community
-
 ## 📧 Support
 
 If you encounter any issues or have questions, please open an issue on GitHub.
