@@ -4,27 +4,32 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:webpack": "next dev --no-turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "^16.0.4",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.39.3",
-    "@supabase/ssr": "^0.1.0"
+    "next": "^16.0.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
     "@types/node": "^22.7.5",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.15.0",
+    "eslint-config-next": "^16.0.7",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
-    "eslint": "^9.15.0",
-    "eslint-config-next": "^16.0.4"
+    "typescript": "^5.6.3"
   }
 }
-
