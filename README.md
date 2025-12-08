@@ -2,6 +2,8 @@
 
 A full-stack web application for tracking job applications. Built with Next.js 16, TypeScript, and Supabase.
 
+> Last updated: January 2025
+
 ![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript)
 ![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react)
