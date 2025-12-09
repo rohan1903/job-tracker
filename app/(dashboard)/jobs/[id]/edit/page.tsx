@@ -8,8 +8,10 @@ import { JobFormData } from "@/lib/types";
 export default async function EditJobPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+  
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,7 +24,7 @@ export default async function EditJobPage({
   const { data: job, error } = await supabase
     .from("jobs")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
@@ -33,14 +35,14 @@ export default async function EditJobPage({
   // Create a bound server action that captures the jobId
   async function updateJobWithId(data: JobFormData) {
     "use server";
-    await updateJob(params.id, data);
+    await updateJob(id, data);
   }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="mb-6">
         <Link
-          href={`/jobs/${params.id}`}
+          href={`/jobs/${id}`}
           className="text-sm text-gray-700 hover:text-gray-900"
         >
           ← Back to Job Details
