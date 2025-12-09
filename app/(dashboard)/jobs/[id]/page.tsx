@@ -8,6 +8,40 @@ export default async function JobDetailPage({
 }: {
   params: { id: string };
 }) {
+  // If Supabase isn't configured, avoid throwing a 404 and show a friendly message instead.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  const isSupabaseConfigured =
+    supabaseUrl &&
+    supabaseKey &&
+    !supabaseUrl.includes("placeholder") &&
+    !supabaseKey.includes("placeholder");
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <Link
+            href="/jobs"
+            className="text-sm text-gray-700 hover:text-gray-900"
+          >
+            ← Back to Jobs
+          </Link>
+        </div>
+        <div className="bg-white shadow rounded-lg p-6">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            Job details unavailable
+          </h1>
+          <p className="text-sm text-gray-600">
+            Supabase is not configured. Please add your Supabase credentials to
+            the environment variables to enable job details.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

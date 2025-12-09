@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import JobForm from "@/components/jobs/JobForm";
 import { updateJob } from "@/app/actions/jobs";
+import { JobFormData } from "@/lib/types";
 
 export default async function EditJobPage({
   params,
@@ -29,10 +30,11 @@ export default async function EditJobPage({
     notFound();
   }
 
-  const handleUpdate = async (data: Parameters<typeof updateJob>[1]) => {
+  // Create a bound server action that captures the jobId
+  async function updateJobWithId(data: JobFormData) {
     "use server";
     await updateJob(params.id, data);
-  };
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -49,7 +51,7 @@ export default async function EditJobPage({
         <h1 className="text-3xl font-bold text-gray-900 mb-6">
           Edit Job Application
         </h1>
-        <JobForm job={job} onSubmit={handleUpdate} />
+        <JobForm job={job} onSubmit={updateJobWithId} />
       </div>
     </div>
   );

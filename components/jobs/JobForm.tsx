@@ -76,9 +76,10 @@ export default function JobForm({ job, onSubmit, onCancel }: JobFormProps) {
     }
   };
 
+  // Update form when job prop changes
   useEffect(() => {
     if (job) {
-      setFormData({
+      const newFormData = {
         company: job.company || "",
         position: job.position || "",
         status: job.status || "applied",
@@ -87,8 +88,18 @@ export default function JobForm({ job, onSubmit, onCancel }: JobFormProps) {
         job_url: job.job_url || "",
         salary_range: job.salary_range || "",
         location: job.location || "",
+      };
+      // Only update if data actually changed to avoid unnecessary re-renders
+      setFormData((prev) => {
+        const hasChanged = Object.keys(newFormData).some(
+          (key) => prev[key as keyof JobFormData] !== newFormData[key as keyof JobFormData]
+        );
+        return hasChanged ? newFormData : prev;
       });
-      setDateDisplay(formatDateForDisplay(job.applied_date || ""));
+      const newDateDisplay = formatDateForDisplay(job.applied_date || "");
+      setDateDisplay((prev) => {
+        return newDateDisplay !== prev ? newDateDisplay : prev;
+      });
     }
   }, [job]);
 
@@ -207,7 +218,7 @@ export default function JobForm({ job, onSubmit, onCancel }: JobFormProps) {
               type="text"
               value={dateDisplay}
               onChange={handleDateDisplayChange}
-              onFocus={(e) => {
+              onFocus={() => {
                 // When text input is focused, trigger the date picker
                 const dateInput = document.getElementById("applied_date");
                 if (dateInput) {

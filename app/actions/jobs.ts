@@ -71,3 +71,40 @@ export async function updateJob(jobId: string, data: JobFormData) {
   redirect(`/jobs/${jobId}`);
 }
 
+export async function deleteJob(jobId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  // Verify the job belongs to the user before deleting
+  const { data: job, error: fetchError } = await supabase
+    .from("jobs")
+    .select("id")
+    .eq("id", jobId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (fetchError || !job) {
+    throw new Error("Job not found or you don't have permission to delete it");
+  }
+
+  const { error } = await supabase
+    .from("jobs")
+    .delete()
+    .eq("id", jobId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath("/dashboard");
+  redirect("/jobs");
+}
+

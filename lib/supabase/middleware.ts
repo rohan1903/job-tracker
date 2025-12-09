@@ -10,8 +10,12 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder') || supabaseKey.includes('placeholder')) {
-    // If credentials are missing, allow access to auth pages but block dashboard
+  // If credentials are missing or invalid, allow access to auth pages but block dashboard
+  if (!supabaseUrl || !supabaseKey || 
+      supabaseUrl.includes('placeholder') || 
+      supabaseKey.includes('placeholder') ||
+      !supabaseUrl.startsWith('https://') ||
+      supabaseKey.length < 50) {
     if (request.nextUrl.pathname.startsWith("/dashboard")) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +12,32 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
+
+  // Check if Supabase is configured on mount
+  useEffect(() => {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      // Debug: Log environment variables (URL will be visible, key will be truncated)
+      console.log("Supabase URL:", supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : "NOT SET");
+      console.log("Supabase Key:", supabaseKey ? `${supabaseKey.substring(0, 20)}...` : "NOT SET");
+      
+      if (!supabaseUrl || !supabaseKey) {
+        setConfigError(
+          "Environment variables not set. Check Vercel settings and redeploy."
+        );
+        return;
+      }
+      
+      createClient();
+    } catch (err) {
+      setConfigError(
+        err instanceof Error ? err.message : "Supabase is not configured"
+      );
+    }
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,18 +55,53 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      
+      // Log the Supabase URL being used (for debugging)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      console.log("Attempting signup with Supabase URL:", supabaseUrl);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined,
+        },
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        console.error("Supabase auth error:", error);
+        setError(error.message);
+        setLoading(false);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      
+      // Check if it's a network/fetch error
+      if (errorMessage.includes("fetch") || errorMessage.includes("network") || errorMessage.includes("Failed to fetch")) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        setError(
+          `Failed to connect to Supabase. Details:\n` +
+          `- Supabase URL: ${supabaseUrl || "NOT SET"}\n` +
+          `- Check: 1) Environment variables in Vercel\n` +
+          `- Check: 2) Supabase redirect URLs configured\n` +
+          `- Check: 3) Browser console for CORS errors\n` +
+          `- Check: 4) Vercel function logs`
+        );
+      } else if (errorMessage.includes("not configured") || errorMessage.includes("Invalid")) {
+        setError(
+          `Configuration Error: ${errorMessage}\n` +
+          `Make sure environment variables are set in Vercel and you've redeployed.`
+        );
+      } else {
+        setError(errorMessage);
+      }
       setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   };
 
@@ -62,6 +123,15 @@ export default function SignupPage() {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+          {configError && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
+              <p className="font-semibold">Configuration Required</p>
+              <p className="text-sm mt-1">{configError}</p>
+              <p className="text-xs mt-2">
+                See <code className="bg-yellow-100 px-1 rounded">ENV_SETUP.md</code> for setup instructions.
+              </p>
+            </div>
+          )}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               {error}
@@ -78,6 +148,7 @@ export default function SignupPage() {
                 type="email"
                 autoComplete="email"
                 required
+                suppressHydrationWarning
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
@@ -94,6 +165,7 @@ export default function SignupPage() {
                 type="password"
                 autoComplete="new-password"
                 required
+                suppressHydrationWarning
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password (min. 6 characters)"
                 value={password}
@@ -110,6 +182,7 @@ export default function SignupPage() {
                 type="password"
                 autoComplete="new-password"
                 required
+                suppressHydrationWarning
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm password"
                 value={confirmPassword}

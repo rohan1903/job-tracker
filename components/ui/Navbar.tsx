@@ -9,10 +9,16 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      // If Supabase is not configured, just redirect
+      router.push("/login");
+      router.refresh();
+    }
   };
 
   const isActive = (path: string) => pathname === path;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const statusOptions = [
   { value: "all", label: "All Status" },
@@ -21,13 +21,16 @@ export default function JobFilter({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Local state mirrors the URL/searchParams but is always driven by props
   const [search, setSearch] = useState(currentSearch);
   const [status, setStatus] = useState(currentStatus);
 
+  // Keep local state in sync with incoming props without causing render-time updates
   useEffect(() => {
     setSearch(currentSearch);
     setStatus(currentStatus);
-  }, [currentSearch, currentStatus]);
+  }, [currentStatus, currentSearch]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

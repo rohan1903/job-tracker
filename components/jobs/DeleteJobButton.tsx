@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { deleteJob } from "@/app/actions/jobs";
 
 export default function DeleteJobButton({ jobId }: { jobId: string }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,16 +11,12 @@ export default function DeleteJobButton({ jobId }: { jobId: string }) {
   const handleDelete = async () => {
     setLoading(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.from("jobs").delete().eq("id", jobId);
-
-    if (error) {
-      console.error("Error deleting job:", error);
-      setError("Failed to delete job. Please try again.");
+    try {
+      await deleteJob(jobId);
+    } catch (err) {
+      console.error("Error deleting job:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete job. Please try again.");
       setLoading(false);
-    } else {
-      router.push("/jobs");
-      router.refresh();
     }
   };
 

@@ -7,7 +7,7 @@ import JobFilter from "@/components/jobs/JobFilter";
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; search?: string };
+  searchParams: Promise<{ status?: string; search?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -18,6 +18,9 @@ export default async function JobsPage({
     redirect("/login");
   }
 
+  // Await searchParams (Next.js 15+)
+  const params = await searchParams;
+
   // Build query
   let query = supabase
     .from("jobs")
@@ -26,28 +29,26 @@ export default async function JobsPage({
     .order("created_at", { ascending: false });
 
   // Apply status filter
-  if (searchParams.status && searchParams.status !== "all") {
-    query = query.eq("status", searchParams.status);
+  if (params.status && params.status !== "all") {
+    query = query.eq("status", params.status);
+  }
+
+  // Apply search filter server-side using Supabase
+  if (params.search && params.search.trim()) {
+    const searchTerm = params.search.trim();
+    // Use or filter to search both company and position fields
+    query = query.or(`company.ilike.%${searchTerm}%,position.ilike.%${searchTerm}%`);
   }
 
   // Fetch jobs
   const { data: jobs, error } = await query;
 
   if (error) {
-    console.error("Error fetching jobs:", error);
+    // Silently handle errors - don't log to console to avoid source map issues
+    // Error will be handled by the UI showing no results
   }
 
-  let filteredJobs = jobs || [];
-
-  // Apply search filter (client-side for simplicity)
-  if (searchParams.search) {
-    const searchTerm = searchParams.search.toLowerCase();
-    filteredJobs = filteredJobs.filter(
-      (job) =>
-        job.company.toLowerCase().includes(searchTerm) ||
-        job.position.toLowerCase().includes(searchTerm)
-    );
-  }
+  const filteredJobs = jobs || [];
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -70,8 +71,8 @@ export default async function JobsPage({
 
       <div className="mt-6">
         <JobFilter
-          currentStatus={searchParams.status || "all"}
-          currentSearch={searchParams.search || ""}
+          currentStatus={params.status || "all"}
+          currentSearch={params.search || ""}
         />
       </div>
 
@@ -84,11 +85,11 @@ export default async function JobsPage({
       ) : (
         <div className="mt-6 text-center py-12 bg-white rounded-lg border border-gray-200">
           <p className="text-gray-500">
-            {searchParams.status || searchParams.search
+            {params.status || params.search
               ? "No jobs found matching your filters."
               : "No job applications yet."}
           </p>
-          {!(searchParams.status || searchParams.search) && (
+          {!(params.status || params.search) && (
             <Link
               href="/jobs/new"
               className="mt-4 inline-block text-gray-700 hover:text-gray-900"
